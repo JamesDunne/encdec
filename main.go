@@ -79,7 +79,7 @@ var algorithms map[string]Algorithm = map[string]Algorithm{
 func main() {
 	args := os.Args[1:]
 	if len(args) < 2 {
-		fmt.Fprintf(os.Stderr, "encdec -e|-d <algorithm> [data]\n")
+		fmt.Fprintf(os.Stderr, "encdec <-e | -d> <algorithm> <data | ->\n")
 		fmt.Fprintf(os.Stderr, "\nAlgorithms:\n")
 		for name, _ := range algorithms {
 			fmt.Fprintf(os.Stderr, "  %s\n", name)
@@ -106,13 +106,18 @@ func main() {
 		return
 	}
 
-	// Data is remainder:
+	// Data taken from stdin or args:
 	var src io.Reader
-	if len(args) > 2 {
-		data := strings.Join(args[2:], " ")
-		src = bytes.NewReader([]byte(data))
+
+	if len(args) == 2 {
+		src = bytes.NewReader([]byte{})
 	} else {
-		src = os.Stdin
+		if args[2] != "-" {
+			data := strings.Join(args[2:], " ")
+			src = bytes.NewReader([]byte(data))
+		} else {
+			src = os.Stdin
+		}
 	}
 
 	// Encode or decode data:
