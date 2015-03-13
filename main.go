@@ -141,6 +141,10 @@ func main() {
 	algorithm, ok := algorithms[algorithm_name]
 	if !ok {
 		fmt.Fprintln(os.Stderr, "Unknown algorithm name")
+		fmt.Fprintf(os.Stderr, "\nAlgorithms:\n")
+		for name, _ := range algorithms {
+			fmt.Fprintf(os.Stderr, "  %s\n", name)
+		}
 		return
 	}
 
