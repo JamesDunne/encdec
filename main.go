@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"encoding/base32"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"html"
 	"io"
@@ -28,6 +30,42 @@ var algorithms map[string]Algorithm = map[string]Algorithm{
 		Decode: func(dst io.Writer, src io.Reader) error {
 			decoder := base64.NewDecoder(base64.URLEncoding, src)
 			_, err := io.Copy(dst, decoder)
+			return err
+		},
+	},
+	"base32": Algorithm{
+		Encode: func(dst io.Writer, src io.Reader) error {
+			encoder := base32.NewEncoder(base32.StdEncoding, dst)
+			defer encoder.Close()
+			_, err := io.Copy(encoder, src)
+			return err
+		},
+		Decode: func(dst io.Writer, src io.Reader) error {
+			decoder := base32.NewDecoder(base32.StdEncoding, src)
+			_, err := io.Copy(dst, decoder)
+			return err
+		},
+	},
+	"hex": Algorithm{
+		Encode: func(dst io.Writer, src io.Reader) error {
+			b, err := ioutil.ReadAll(src)
+			if err != nil {
+				return err
+			}
+			o := hex.EncodeToString(b)
+			_, err = io.Copy(dst, strings.NewReader(o))
+			return err
+		},
+		Decode: func(dst io.Writer, src io.Reader) error {
+			b, err := ioutil.ReadAll(src)
+			if err != nil {
+				return err
+			}
+			o, err := hex.DecodeString(string(b))
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(dst, bytes.NewReader(o))
 			return err
 		},
 	},
